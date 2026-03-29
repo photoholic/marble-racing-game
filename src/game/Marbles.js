@@ -1,4 +1,4 @@
-import Matter from 'matter-js';
+import * as Matter from 'matter-js';
 
 const { Bodies, Composite } = Matter;
 
