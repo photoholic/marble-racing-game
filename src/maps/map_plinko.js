@@ -32,6 +32,19 @@ export default {
         const maxRows = 30;
 
         for (let row = 1; row <= maxRows; row++) {
+            // 메가 경사로 (진행를 늦추고 구슬을 다시 뭉치게 만듦)
+            if (row === 12 || row === 24) {
+                const isLeft = (row === 12);
+                const megaLen = worldWidth * 0.85; 
+                const megaX = isLeft ? megaLen / 2 - 20 : worldWidth - (megaLen / 2) + 20;
+                const megaAngle = isLeft ? Math.PI / 12 : -Math.PI / 12; // 아래로 향하게 강제
+                bodies.push(Bodies.rectangle(megaX, gridY, megaLen, 30, {
+                    isStatic: true, angle: megaAngle, render: { fillStyle: '#8b5cf6' }
+                }));
+                gridY += spacingY;
+                continue; // 핀 생성은 이번 줄 생략
+            }
+
             // 정삼각형 피라미드 형식으로 1개, 2개, 3개... 생성
             // 맵 너비에 꽉 차면 더 이상 늘리지 않음
             const numPins = Math.min(row, Math.floor((worldWidth - 100) / spacingX));

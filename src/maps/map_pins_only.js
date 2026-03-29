@@ -22,6 +22,20 @@ export default {
         for (let row = 0; row < rows; row++) {
             const currentY = startY + (row * spacingY);
 
+            // 완급 조절용 90% 메가 경사로 (2~3회 추가)
+            if (row === 6 || row === 14 || row === 22) {
+                const isLeft = (row === 6 || row === 22);
+                const megaLen = worldWidth * 0.85; // 85~90% 너비
+                const megaX = isLeft ? megaLen / 2 - 20 : worldWidth - (megaLen / 2) + 20;
+                const megaAngle = isLeft ? Math.PI / 12 : -Math.PI / 12; // 벽쪽에서 시작해 무조건 아래(중앙)으로 향함
+                
+                bodies.push(Bodies.rectangle(megaX, currentY, megaLen, 40, {
+                    isStatic: true, angle: megaAngle, render: { fillStyle: '#f59e0b' }
+                }));
+                // 메가 경사로가 있는 줄은 핀과 잡동사니 생성을 건너뜀
+                continue;
+            }
+
             if (row % 3 === 1 && row >= 2 && row <= rows - 2) {
                 bodies.push(Bodies.rectangle(20, currentY - 50, 75, 20, {
                     isStatic: true, angle: Math.PI / 6, render: { fillStyle: '#475569' } 

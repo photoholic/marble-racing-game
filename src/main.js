@@ -5,7 +5,6 @@ import { MarbleManager } from './game/Marbles.js';
 import mapTypeC from './maps/typeC_pachinko.js';
 import mapPins from './maps/map_pins_only.js';
 import mapSeesaws from './maps/map_seesaws.js';
-import mapBumpers from './maps/map_bumpers.js';
 import mapSpincity from './maps/map_spincity.js';
 import mapGlassbreaker from './maps/map_glassbreaker.js';
 import mapOrbital from './maps/map_orbital.js';
@@ -16,7 +15,6 @@ const mapsConfig = {
     'mixed': mapTypeC,
     'pins': mapPins,
     'seesaws': mapSeesaws,
-    'bumpers': mapBumpers,
     'spincity': mapSpincity,
     'glassbreaker': mapGlassbreaker,
     'orbital': mapOrbital,

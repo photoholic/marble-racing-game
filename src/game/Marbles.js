@@ -27,9 +27,31 @@ export class MarbleManager {
                     if (!marble.isFinished) {
                         const speedSq = marble.velocity.x * marble.velocity.x + marble.velocity.y * marble.velocity.y;
                         if (speedSq < 0.05) { // 완전히 멈췄거나 균형점에 갇힘
-                            // 초미세 랜덤 진동을 가해 평형 균형(Equilibrium)을 깨트림
-                            const nudge = (Math.random() - 0.5) * 0.0003;
-                            Matter.Body.applyForce(marble, marble.position, { x: nudge, y: 0.0001 });
+                            marble.stuckFrames = (marble.stuckFrames || 0) + 1;
+                            
+                            // 1단계: 0.5초(30프레임) 이상 멈추면 지진(Nudge) 물리력 행사
+                            if (marble.stuckFrames > 30 && marble.stuckFrames <= 120) {
+                                const nudge = (Math.random() - 0.5) * 0.001;
+                                Matter.Body.applyForce(marble, marble.position, { x: nudge, y: -0.0005 });
+                            }
+                            
+                            // 2단계: 2초(120프레임) 이상 완전히 갇히면 맞닿은 장애물 자체를 파괴!
+                            if (marble.stuckFrames > 120) {
+                                const allBodies = Matter.Composite.allBodies(this.world);
+                                const collisions = Matter.Query.collides(marble, allBodies);
+                                for (let col of collisions) {
+                                    const other = col.bodyA === marble ? col.bodyB : col.bodyA;
+                                    // 다른 구슬이거나, 골인 지점 같은 센서, 혹은 너무 거대한 맵 외곽선(area>10만)은 파괴 금지
+                                    if (other.label !== 'Marble' && !other.isSensor && other.area < 100000) {
+                                        Matter.Composite.remove(this.world, other);
+                                        console.log("Anti-Stall: Destroyed obstacle trapping marble", marble.id);
+                                    }
+                                }
+                                marble.stuckFrames = 0; // 구제 후 프레임 초기화
+                            }
+                        } else {
+                            // 다시 굴러가면 정상화
+                            marble.stuckFrames = 0;
                         }
                     }
                 }
