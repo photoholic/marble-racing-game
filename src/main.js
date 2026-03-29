@@ -69,8 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    placeBtn.addEventListener('click', () => {
-        const count = Math.min(100, Math.max(2, parseInt(playerCountInput.value) || 10)); // Min 2, Max 100
+    let isStandbyReady = false;
+
+    placeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        const count = Math.min(100, Math.max(2, parseInt(playerCountInput.value) || 10));
         const selectedMapData = mapsConfig[mapSelectInput.value] || mapTypeC;
         
         startScreen.classList.add('hidden');
@@ -80,33 +84,25 @@ document.addEventListener('DOMContentLoaded', () => {
         engineSetup.clearWorld();
         mapLoader.loadMap(selectedMapData);
         
-        // 하늘 공중에 멈춘 상태로 구슬들을 간격을 두어 배치합니다
         marbleManager.spawnMarbles(count, selectedMapData.getSpawnPoint(window.innerWidth));
         
         engineSetup.start();
 
-        // 출발 대기 UI 띄우기 및 랭킹표, 뒤로가기 버튼 활성화
         standbyUi.classList.remove('hidden');
         document.getElementById('back-to-start-btn').classList.remove('hidden');
         
-        // 두번째 화면(구슬 배치)부터 실시간 순위 표시!
         const liveRankings = document.getElementById('live-rankings');
         if (liveRankings) {
-            liveRankings.classList.remove('hidden');
-            document.getElementById('live-ranking-list').innerHTML = ''; // 초기화
+            liveRankings.classList.add('hidden');
+            document.getElementById('live-ranking-list').innerHTML = '';
         }
 
-        // 스마트폰 고스트 클릭 방어 (의도치 않은 출발 방지용 0.5초 무적)
-        const raceBtn = document.getElementById('start-race-btn');
-        raceBtn.disabled = true;
-        raceBtn.style.opacity = '0.5';
-        setTimeout(() => {
-            raceBtn.disabled = false;
-            raceBtn.style.opacity = '1';
-        }, 500);
+        isStandbyReady = false;
+        setTimeout(() => { isStandbyReady = true; }, 300);
     });
 
     backToStartBtn.addEventListener('click', () => {
+        isStandbyReady = false;
         standbyUi.classList.add('hidden');
         document.getElementById('back-to-start-btn').classList.add('hidden');
         document.getElementById('live-rankings')?.classList.add('hidden');
@@ -116,7 +112,11 @@ document.addEventListener('DOMContentLoaded', () => {
         engineSetup.clearWorld();
     });
 
-    startRaceBtn.addEventListener('click', () => {
+    startRaceBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!isStandbyReady) return;
+        isStandbyReady = false;
+
         standbyUi.classList.add('hidden');
         document.getElementById('back-to-start-btn').classList.add('hidden');
         
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (count > 0) {
                 countdownDisplay.textContent = count;
                 countdownDisplay.classList.remove('active');
-                void countdownDisplay.offsetWidth; // trigger reflow to restart css animation
+                void countdownDisplay.offsetWidth;
                 countdownDisplay.classList.add('active');
             } else if (count === 0) {
                 countdownDisplay.textContent = "GO!";
@@ -141,8 +141,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 void countdownDisplay.offsetWidth;
                 countdownDisplay.classList.add('active');
                 
-                // 엔진의 구슬들을 정지 해제하여 떨어뜨립니다
                 marbleManager.releaseMarbles();
+                
+                const liveRankings = document.getElementById('live-rankings');
+                if (liveRankings) liveRankings.classList.remove('hidden');
             } else {
                 clearInterval(countInterval);
                 countdownDisplay.classList.remove('active');
@@ -152,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     restartBtn.addEventListener('click', () => {
-        // 모든 진행중이던 팝업 및 UI 패널 완전 클리어
         leaderboard.classList.add('hidden');
         standbyUi.classList.add('hidden');
         countdownDisplay.classList.add('hidden');
