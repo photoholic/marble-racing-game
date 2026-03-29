@@ -6,7 +6,7 @@
     <title>구슬 레이싱</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
     
-  <script type="module" crossorigin src="/marble-racing-game/assets/index-231ca868.js"></script>
+  <script type="module" crossorigin src="/marble-racing-game/assets/index-65ca54f1.js"></script>
   <link rel="stylesheet" href="/marble-racing-game/assets/index-1eaeae76.css">
 </head>
 <body>
@@ -14,7 +14,15 @@
         <canvas id="game-canvas"></canvas>
         <div id="ui-layer">
             <!-- 디버깅용 초기화 상태 표시기 -->
-            <div id="boot-status" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #64748b; z-index: 10000; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 4px;">SYSTEM INITIALIZING...</div>
+            <div id="boot-status" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #f8fafc; z-index: 10000; background: rgba(15, 23, 42, 0.8); padding: 4px 12px; border-radius: 4px; font-family: monospace; border: 1px solid rgba(255,255,255,0.1);">[BOOT] WAITING...</div>
+            <script>
+                window.BOOT_LOG = (msg) => {
+                    const el = document.getElementById('boot-status');
+                    if(el) el.textContent = "[BOOT] " + msg;
+                    console.log("[BOOT] " + msg);
+                };
+                BOOT_LOG("CORE HTML LOADED");
+            </script>
 
             <div id="start-screen" class="panel">
                 <h1>마블 레이스 <span class="badge">v1.0.5</span></h1>
