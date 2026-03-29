@@ -6,8 +6,8 @@
     <title>구슬 레이싱</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
     
-  <script type="module" crossorigin src="/marble-racing-game/assets/index-4cb9bc77.js"></script>
-  <link rel="stylesheet" href="/marble-racing-game/assets/index-1eaeae76.css">
+  <script type="module" crossorigin src="/marble-racing-game/assets/index-45bf69c9.js"></script>
+  <link rel="stylesheet" href="/marble-racing-game/assets/index-52b4fad8.css">
 </head>
 <body>
     <div id="app">
@@ -25,7 +25,7 @@
             </script>
 
             <div id="start-screen" class="panel">
-                <h1>마블 레이스 <span class="badge">v1.0.5</span></h1>
+                <h1>마블 레이스</h1>
                 <p>구슬 수를 정하고 배치한 뒤 출발하세요!</p>
                 <div class="input-group">
                     <label>맵 테마 선택</label>
@@ -35,9 +35,7 @@
                         <option value="seesaws">Seesaw Valley (경사로와 시소)</option>
                         <option value="spincity">Spin City (거대 풍차 모터)</option>
                         <option value="glassbreaker">Glass Breaker (유리벽 파괴)</option>
-                        <option value="orbital">Orbital Nexus (블랙홀 중력장)</option>
-                        <option value="conveyor">Conveyor Cascade (고속 무빙워크)</option>
-                        <option value="plinko">Plinko Pyramid (확률 피라미드)</option>
+
                     </select>
                 </div>
                 <div class="input-group">
@@ -47,7 +45,7 @@
                 <button id="place-btn" class="glow-btn">구슬 배치</button>
             </div>
             
-            <button id="back-to-start-btn" class="hidden" style="position: absolute; top: 15px; left: 15px; width: 45px; height: 45px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; z-index: 100; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.2); color: white; cursor: pointer; backdrop-filter: blur(10px);">🔙</button>
+            <button id="back-to-start-btn" class="back-btn hidden">🔙</button>
 
             <div id="standby-ui" class="hidden" style="position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); z-index: 20; width: max-content; text-align: center;">
                 <button id="start-race-btn" class="start-action glow-btn text-2xl font-bold px-10 py-5" style="white-space: nowrap; min-width: 320px;">🚀 레이스 출발!</button>
@@ -71,7 +69,7 @@
             <div id="toast" class="toast hidden"></div>
         </div>
     </div>
-    <div id="version-tag" style="position: fixed; bottom: 10px; right: 15px; font-size: 11px; color: #94a3b8; opacity: 0.6; pointer-events: none; z-index: 1000; font-family: 'Outfit', sans-serif;">v1.0.6 r2 | daniel</div>
+    <div id="version-tag" style="position: fixed; bottom: 10px; right: 15px; font-size: 11px; color: #94a3b8; opacity: 0.6; pointer-events: none; z-index: 1000; font-family: 'Outfit', sans-serif;">v1.1.0 | daniel</div>
     <!-- Matter.js CDN 로딩: 번들러 호환성 이슈 해결 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     
