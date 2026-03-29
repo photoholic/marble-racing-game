@@ -1,4 +1,4 @@
-import Matter from 'matter-js';
+import { addZigzagBoundaryAndFinish } from '../game/MapBoundary.js';
 
 const { Bodies } = Matter;
 
@@ -10,10 +10,7 @@ export default {
     },
     generate(worldWidth, mapHeight) {
         const bodies = [];
-        const wallOptions = { isStatic: true, render: { fillStyle: '#475569' } };
-        const thick = 100;
-        bodies.push(Bodies.rectangle(-thick/2, mapHeight/2, thick, mapHeight, wallOptions));
-        bodies.push(Bodies.rectangle(worldWidth + thick/2, mapHeight/2, thick, mapHeight, wallOptions));
+
 
         const startY = window.innerHeight * 0.9;
         const rows = 9;
@@ -47,11 +44,13 @@ export default {
                 restitution: 1.2, render: { fillStyle: '#38bdf8' }
             }));
             
-            // 중앙에 약간의 방해 벽
             bodies.push(Bodies.circle(worldWidth/2, y - 100, 25, {
                 isStatic: true, render: { fillStyle: '#94a3b8' }
             }));
         }
+
+        const obsEndY = startY + 200 + (rows * spacingY);
+        addZigzagBoundaryAndFinish(bodies, worldWidth, startY, obsEndY);
 
         return bodies;
     }

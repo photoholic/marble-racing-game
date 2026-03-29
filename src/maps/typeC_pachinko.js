@@ -2,21 +2,14 @@ import Matter from 'matter-js';
 
 const { Bodies, Body, Constraint } = Matter;
 
+import { addZigzagBoundaryAndFinish } from '../game/MapBoundary.js';
+
 export default {
     name: "Type C: 다이내믹 파친코",
     getSpawnPoint: (worldWidth) => ({ x: worldWidth / 2, y: 100, width: worldWidth, height: 200 }),
     generate: (worldWidth) => {
         const bodies = [];
-        const mapHeight = 10000; // 결승선 밑까지 커버하도록 길이 대폭 연장
-        
-        const wallOptions = { 
-            isStatic: true, friction: 0.1, restitution: 0.5, render: { fillStyle: '#1e293b' }
-        };
-        // 벽 두께를 500으로 대폭 늘려 총알처럼 날아오는 구슬도 절대 관통하지 못하게 물리 차단
-        const thick = 500;
-        
-        bodies.push(Bodies.rectangle(-thick/2, mapHeight/2, thick, mapHeight, wallOptions));
-        bodies.push(Bodies.rectangle(worldWidth + thick/2, mapHeight/2, thick, mapHeight, wallOptions));
+
         
         const addAutoSpin = (x, y, scale = 1, fixedAirFriction = 0.08) => {
             const center = Bodies.circle(x, y, 5, { isStatic: true, render: { visible: false } });
@@ -259,32 +252,9 @@ export default {
         bodies.push(finalPlank);
 
         // --- 진짜 결승선 ---
-        const finishY = obsY + 250;
+        const obsEndY = obsY;
+        addZigzagBoundaryAndFinish(bodies, worldWidth, startY, obsEndY);
         
-        // 좁은 모바일 화면에서도 절대 갇히지 않도록 중앙 '구멍' 사이즈(80px)를 수학적으로 절대 사수하는 경사로 배치
-        const funnelGap = 80; 
-        const coverX = (worldWidth / 2) - (funnelGap / 2); // 벽부터 뚫어놓을 중앙 구멍 직전까지 덮어야 할 X 길이
-        const funnelAngle = Math.PI / 6; // 30도
-        // (cos 각도)를 나눠어 실제 대각선 길이를 구하고, 50px을 넉넉히 더해 벽면쪽 깊숙이 박아넣음
-        const funnelLength = (coverX / Math.cos(funnelAngle)) + 50; 
-        const funnelCenterX = coverX / 2; // 중심점
-
-        bodies.push(Bodies.rectangle(funnelCenterX, finishY - 80, funnelLength, 24, {
-            isStatic: true, angle: funnelAngle, render: { fillStyle: '#64748b' }
-        }));
-        // 대칭되는 오른쪽 경사로
-        bodies.push(Bodies.rectangle(worldWidth - funnelCenterX, finishY - 80, funnelLength, 24, {
-            isStatic: true, angle: -funnelAngle, render: { fillStyle: '#64748b' }
-        }));
-
-        const finishLine = Bodies.rectangle(worldWidth/2, finishY, 150, 40, {
-            isStatic: true, isSensor: true, label: 'FinishLine',
-            render: { fillStyle: 'rgba(16, 185, 129, 0.4)', strokeStyle: '#10b981', lineWidth: 2 }
-        });
-        bodies.push(finishLine);
-        
-        bodies.push(Bodies.rectangle(worldWidth/2, finishY + 200, worldWidth, 100, wallOptions));
-
         return bodies;
     }
-}
+};

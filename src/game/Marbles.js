@@ -20,38 +20,41 @@ export class MarbleManager {
         this.marbles = [];
         this.glassFloor = null;
         
-        // 안티-스톨 (구슬 멈춤 방지) 로직 주기적 실행
+        // 안티-스톨 (구슬 멈춤 방지) 로직 주기적 실행 (Y축 기준)
+        let frameCount = 0;
         Matter.Events.on(this.engineSetup.engine, 'beforeUpdate', () => {
-            if (!this.glassFloor && this.marbles.length > 0) {
-                for (let marble of this.marbles) {
-                    if (!marble.isFinished) {
-                        const speedSq = marble.velocity.x * marble.velocity.x + marble.velocity.y * marble.velocity.y;
-                        if (speedSq < 0.05) { // 완전히 멈췄거나 균형점에 갇힘
-                            marble.stuckFrames = (marble.stuckFrames || 0) + 1;
-                            
-                            // 1단계: 0.5초(30프레임) 이상 멈추면 지진(Nudge) 물리력 행사
-                            if (marble.stuckFrames > 30 && marble.stuckFrames <= 120) {
-                                const nudge = (Math.random() - 0.5) * 0.001;
-                                Matter.Body.applyForce(marble, marble.position, { x: nudge, y: -0.0005 });
-                            }
-                            
-                            // 2단계: 2초(120프레임) 이상 완전히 갇히면 맞닿은 장애물 자체를 파괴!
-                            if (marble.stuckFrames > 120) {
-                                const allBodies = Matter.Composite.allBodies(this.world);
-                                const collisions = Matter.Query.collides(marble, allBodies);
-                                for (let col of collisions) {
-                                    const other = col.bodyA === marble ? col.bodyB : col.bodyA;
-                                    // 다른 구슬이거나, 골인 지점 같은 센서, 혹은 너무 거대한 맵 외곽선(area>10만)은 파괴 금지
-                                    if (other.label !== 'Marble' && !other.isSensor && other.area < 100000) {
-                                        Matter.Composite.remove(this.world, other);
-                                        console.log("Anti-Stall: Destroyed obstacle trapping marble", marble.id);
+            // 경기가 시작(구슬들의 isStatic이 풀림)된 이후에만 체크
+            if (this.marbles.length > 0 && !this.marbles[0].isStatic) {
+                frameCount++;
+                if (frameCount % 30 === 0) { // 매 30프레임 (약 0.5초) 마다 체크
+                    for (let marble of this.marbles) {
+                        if (!marble.isFinished) {
+                            if (marble.lastStuckCheckY !== undefined) {
+                                const deltaY = Math.abs(marble.position.y - marble.lastStuckCheckY);
+                                if (deltaY < 5) {
+                                    // Y축으로 5픽셀 미만 움직임 = 갇혔거나 너무 느림
+                                    marble.stuckFrames = (marble.stuckFrames || 0) + 30;
+                                    
+                                    if (marble.stuckFrames >= 60) { // 1초 연속으로 못 내려감
+                                        const allBodies = Matter.Composite.allBodies(this.world);
+                                        const collisions = Matter.Query.collides(marble, allBodies);
+                                        for (let col of collisions) {
+                                            const other = col.bodyA === marble ? col.bodyB : col.bodyA;
+                                            if (other.label !== 'Marble' && !other.isSensor && other.area < 100000) {
+                                                Matter.Composite.remove(this.world, other);
+                                                console.log("Anti-Stall: Y-axis stuck, destroyed obstacle!");
+                                            }
+                                        }
+                                        // 구제 후 흔들어줌
+                                        Matter.Body.applyForce(marble, marble.position, { x: 0.001, y: -0.001 });
+                                        marble.stuckFrames = 0;
                                     }
+                                } else {
+                                    // 정상 하강 중
+                                    marble.stuckFrames = 0;
                                 }
-                                marble.stuckFrames = 0; // 구제 후 프레임 초기화
                             }
-                        } else {
-                            // 다시 굴러가면 정상화
-                            marble.stuckFrames = 0;
+                            marble.lastStuckCheckY = marble.position.y;
                         }
                     }
                 }
@@ -64,21 +67,13 @@ export class MarbleManager {
         const radius = 12;
 
         const floorY = window.innerHeight * 0.83; 
-        this.glassFloor = Bodies.rectangle(window.innerWidth/2, floorY, window.innerWidth * 2, 10, {
-            isStatic: true,
-            render: {
-                fillStyle: 'rgba(255, 255, 255, 0.15)',
-                strokeStyle: '#94a3b8',
-                lineWidth: 1
-            }
-        });
-        Composite.add(this.world, this.glassFloor);
+        this.glassFloor = null; // 대기실 유리 바닥을 없앴습니다!
 
-        // 구슬이 좌우 여백을 무시하고 퍼지는 것을 막기 위해 중앙 정렬 배치 계산
+        // 구슬 좌우 범위만 지정하고 Y축은 넓은 공간에 랜덤 뿌리기
         let cols = Math.min(count, Math.max(3, Math.floor(window.innerWidth / 80))); 
         let rows = Math.ceil(count / cols);
         
-        const spacingX = Math.min(70, (window.innerWidth * 0.8) / cols); // X 간격 최대 제한
+        const spacingX = Math.min(70, (window.innerWidth * 0.8) / cols);  // X 간격 최대 제한
         const spacingY = Math.min(50, (floorY - 120) / rows);
 
         for (let i = 0; i < count; i++) {
@@ -86,38 +81,33 @@ export class MarbleManager {
             const col = i % cols;
             
             // 현재 진행 중인 열(row)의 구슬 개수로 row 기준 중앙 좌표 시작점 확보!
-            const itemsInThisRow = Math.min(cols, count - row * cols);
-            const rowWidth = (itemsInThisRow - 1) * spacingX;
-            const startX = (window.innerWidth - rowWidth) / 2;
-            
-            let x = startX + (col * spacingX);
-            // 구슬이 아래 창고(유리 바닥) 바로 위부터 예쁘게 쌓이도록 Y 계산
-            let y = Math.max(60, floorY - 60 - ((rows - 1 - row) * spacingY));
+            const rColor = colors[i % colors.length];
 
-            const color = colors[i % colors.length];
+            // 랜덤 높이값 부여 (Y축 250픽셀 구간 내 허공에 둥둥 띄우기)
+            const randomOffsetY = (Math.random() - 0.5) * 250;
+            const x = ((window.innerWidth - (Math.min(cols, count) - 1) * spacingX) / 2) + (col * spacingX) + (Math.random() - 0.5) * 20;
+            const y = (floorY - 100) + randomOffsetY;
 
             const marble = Bodies.circle(x, y, radius, {
-                label: 'Marble',
-                restitution: 0.3, // 반발력을 절반으로 줄여 너무 튀지 않게 조정
+                restitution: 0.9,
                 friction: 0.005,
-                density: 0.04,
-                isStatic: false, 
-                render: { fillStyle: color, strokeStyle: '#ffffff', lineWidth: 2 }
+                density: 0.05,
+                render: { fillStyle: rColor },
+                label: 'Marble',
+                isStatic: true // 대기 상태 (허공에 고정)
             });
 
-            marble.marbleName = generateRandomName() + ` (${i+1})`;
-            marble.isFinished = false;
-
+            marble.marbleName = generateRandomName();
+            marble.circleRadius = radius;
+            
             this.marbles.push(marble);
+            Composite.add(this.world, marble);
         }
-
-        Composite.add(this.world, this.marbles);
     }
 
     releaseMarbles() {
-        if (this.glassFloor) {
-            Composite.remove(this.world, this.glassFloor);
-            this.glassFloor = null;
+        for (let marble of this.marbles) {
+            Matter.Body.setStatic(marble, false);
         }
     }
 }

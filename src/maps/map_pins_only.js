@@ -1,4 +1,5 @@
 import Matter from 'matter-js';
+import { addZigzagBoundaryAndFinish } from '../game/MapBoundary.js';
 const { Bodies } = Matter;
 
 export default {
@@ -6,12 +7,7 @@ export default {
     getSpawnPoint: (worldWidth) => ({ x: worldWidth / 2, y: 100, width: worldWidth, height: 200 }),
     generate: (worldWidth) => {
         const bodies = [];
-        const mapHeight = 5000;
-        
-        const wallOptions = { isStatic: true, friction: 0.1, restitution: 0.5, render: { fillStyle: '#1e293b' } };
-        const thick = 500;
-        bodies.push(Bodies.rectangle(-thick/2, mapHeight/2, thick, mapHeight, wallOptions));
-        bodies.push(Bodies.rectangle(worldWidth + thick/2, mapHeight/2, thick, mapHeight, wallOptions));
+
         
         const rows = 26; 
         const spacingX = Math.max(70, worldWidth / 6); 
@@ -22,19 +18,6 @@ export default {
         for (let row = 0; row < rows; row++) {
             const currentY = startY + (row * spacingY);
 
-            // 완급 조절용 90% 메가 경사로 (2~3회 추가)
-            if (row === 6 || row === 14 || row === 22) {
-                const isLeft = (row === 6 || row === 22);
-                const megaLen = worldWidth * 0.85; // 85~90% 너비
-                const megaX = isLeft ? megaLen / 2 - 20 : worldWidth - (megaLen / 2) + 20;
-                const megaAngle = isLeft ? Math.PI / 12 : -Math.PI / 12; // 벽쪽에서 시작해 무조건 아래(중앙)으로 향함
-                
-                bodies.push(Bodies.rectangle(megaX, currentY, megaLen, 40, {
-                    isStatic: true, angle: megaAngle, render: { fillStyle: '#f59e0b' }
-                }));
-                // 메가 경사로가 있는 줄은 핀과 잡동사니 생성을 건너뜀
-                continue;
-            }
 
             if (row % 3 === 1 && row >= 2 && row <= rows - 2) {
                 bodies.push(Bodies.rectangle(20, currentY - 50, 75, 20, {
@@ -71,37 +54,15 @@ export default {
         }
 
         let obsY = startY + rows * spacingY + 80;
-        const zigzagWidth = worldWidth * 0.8;
-        bodies.push(Bodies.rectangle(zigzagWidth/2 - 40, obsY, zigzagWidth, 30, {
-            isStatic: true, angle: Math.PI / 15, render: { fillStyle: '#334155' }
-        }));
         
-        obsY += 160;
         const finalPlankWidth = worldWidth / 3;
-        const finalPlank = Bodies.rectangle(worldWidth/2, obsY, finalPlankWidth, 24, {
+        const finalPlank = Bodies.rectangle(worldWidth/2, obsY + 160, finalPlankWidth, 24, {
             isStatic: true, label: 'MovingPlank', startX: worldWidth/2, moveRange: worldWidth / 3.5, render: { fillStyle: '#94a3b8' }
         });
         bodies.push(finalPlank);
 
-        const finishY = obsY + 250;
-        const funnelGap = 80; 
-        const coverX = (worldWidth / 2) - (funnelGap / 2);
-        const funnelAngle = Math.PI / 6; 
-        const funnelLength = (coverX / Math.cos(funnelAngle)) + 50; 
-        const funnelCenterX = coverX / 2;
-
-        bodies.push(Bodies.rectangle(funnelCenterX, finishY - 80, funnelLength, 24, {
-            isStatic: true, angle: funnelAngle, render: { fillStyle: '#64748b' }
-        }));
-        bodies.push(Bodies.rectangle(worldWidth - funnelCenterX, finishY - 80, funnelLength, 24, {
-            isStatic: true, angle: -funnelAngle, render: { fillStyle: '#64748b' }
-        }));
-
-        const finishLine = Bodies.rectangle(worldWidth/2, finishY, 150, 40, {
-            isStatic: true, isSensor: true, label: 'FinishLine', render: { fillStyle: 'rgba(16, 185, 129, 0.4)', strokeStyle: '#10b981', lineWidth: 2 }
-        });
-        bodies.push(finishLine);
-        bodies.push(Bodies.rectangle(worldWidth/2, finishY + 200, worldWidth, 100, wallOptions));
+        const obsEndY = obsY + 250;
+        addZigzagBoundaryAndFinish(bodies, worldWidth, startY, obsEndY);
 
         return bodies;
     }

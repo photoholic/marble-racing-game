@@ -1,58 +1,38 @@
-import Matter from 'matter-js';
-
-const { Bodies } = Matter;
+import mapTypeC from './typeC_pachinko.js';
+import { addZigzagBoundaryAndFinish } from '../game/MapBoundary.js';
 
 export default {
-    name: "The Glass Breaker",
-    description: "Sacrifice early marbles to shatter the glass blocks and clear a path for the rest.",
-    getSpawnPoint: (worldWidth) => {
-        return { x: worldWidth / 2, y: 50, width: worldWidth * 0.8 };
-    },
+    name: "The Glass Breaker (Chaos)",
+    description: "Every single obstacle from Map 1 can shatter! Break through the chaos to pave the way.",
+    getSpawnPoint: mapTypeC.getSpawnPoint,
     generate(worldWidth, mapHeight) {
-        const bodies = [];
-        const wallOptions = { isStatic: true, render: { fillStyle: '#475569' } };
-        bodies.push(Bodies.rectangle(-50, mapHeight/2, 100, mapHeight, wallOptions));
-        bodies.push(Bodies.rectangle(worldWidth + 50, mapHeight/2, 100, mapHeight, wallOptions));
-
-        const startY = window.innerHeight * 0.9;
+        // 1. 1번 맵의 제너레이터를 그대로 호출해서 모든 구조물을 가져옵니다.
+        // 2. 이때 1번 맵 제너레이터 내에서 addZigzagBoundaryAndFinish가 호출되어 외벽과 피니시라인이 함께 생성됩니다.
+        const bodies = mapTypeC.generate(worldWidth, mapHeight);
         
-        // 층별 유리벽 생성 (구슬이 부수고 지나가야 함)
-        const generateGlassRow = (y, gapWidth) => {
-            const numBlocks = Math.floor(worldWidth / 60);
-            const blockWidth = worldWidth / numBlocks;
-            for (let i = 0; i < numBlocks; i++) {
-                const x = i * blockWidth + (blockWidth / 2);
-                // 양 끝단은 강철 벽으로 (안 부서짐)
-                if (x < 40 || x > worldWidth - 40) {
-                     bodies.push(Bodies.rectangle(x, y, blockWidth, 30, {
-                         isStatic: true,
-                         render: { fillStyle: '#334155' }
-                     }));
-                } else {
-                    const glass = Bodies.rectangle(x, y, blockWidth - 4, 30, {
-                        isStatic: true,
-                        render: { 
-                            fillStyle: 'rgba(56, 189, 248, 0.5)', 
-                            strokeStyle: '#38bdf8', 
-                            lineWidth: 2 
-                        }
-                    });
-                    glass.isBreakable = true; // Engine.js에 작성한 로직이 감지합니다
-                    bodies.push(glass);
+        // 3. 외벽, 피니시라인(센서), 너무 거대한 지그재그 벽면은 파괴 불가하게 설정
+        for (let body of bodies) {
+            // (1) 센서가 아니고 (2) area가 10만 미만인 일반 장애물들만 파괴 가능
+            if (!body.isSensor && body.area < 100000 && body.label !== 'Wall') {
+                body.isBreakable = true;
+                
+                // 유리처럼 보이게 색상 일괄 변경 (투명한 하늘색 느낌)
+                if (body.render) {
+                    body.render.fillStyle = 'rgba(56, 189, 248, 0.4)';
+                    body.render.strokeStyle = '#38bdf8';
+                    body.render.lineWidth = 1;
                 }
-            }
-        };
-
-        const numLayers = 8;
-        for (let i = 0; i < numLayers; i++) {
-            const y = startY + 250 + (i * 200);
-            generateGlassRow(y, 0);
-            
-            // 유리벽 사이에 일반 모루 핀 몇개 섞어서 바운스 유도
-            if (i < numLayers - 1) {
-                const scatterY = y + 100;
-                bodies.push(Bodies.polygon(worldWidth * 0.3, scatterY, 3, 30, { isStatic: true, angle: Math.PI/4, render: { fillStyle: '#cbd5e1' } }));
-                bodies.push(Bodies.polygon(worldWidth * 0.7, scatterY, 3, 30, { isStatic: true, angle: -Math.PI/4, render: { fillStyle: '#cbd5e1' } }));
+                
+                // 엔진.js의 복합체 파츠 배열에 대해 각각 렌더링 값 수정
+                if (body.parts && body.parts.length > 1) {
+                    for (let part of body.parts) {
+                        if (part.render) {
+                            part.render.fillStyle = 'rgba(56, 189, 248, 0.4)';
+                            part.render.strokeStyle = '#38bdf8';
+                            part.render.lineWidth = 1;
+                        }
+                    }
+                }
             }
         }
 

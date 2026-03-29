@@ -1,4 +1,4 @@
-import Matter from 'matter-js';
+import { addZigzagBoundaryAndFinish } from '../game/MapBoundary.js';
 
 const { Bodies } = Matter;
 
@@ -10,10 +10,7 @@ export default {
     },
     generate(worldWidth, mapHeight) {
         const bodies = [];
-        const wallOptions = { isStatic: true, render: { fillStyle: '#475569' } };
-        const thick = 100;
-        bodies.push(Bodies.rectangle(-thick/2, mapHeight/2, thick, mapHeight, wallOptions));
-        bodies.push(Bodies.rectangle(worldWidth + thick/2, mapHeight/2, thick, mapHeight, wallOptions));
+
 
         const startY = window.innerHeight * 0.9;
         
@@ -57,6 +54,8 @@ export default {
 
             currentY += 250;
         }
+
+        addZigzagBoundaryAndFinish(bodies, worldWidth, startY, currentY);
 
         return bodies;
     }

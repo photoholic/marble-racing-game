@@ -1,4 +1,5 @@
 import Matter from 'matter-js';
+import { addZigzagBoundaryAndFinish } from '../game/MapBoundary.js';
 const { Bodies, Constraint } = Matter;
 
 export default {
@@ -6,12 +7,7 @@ export default {
     getSpawnPoint: (worldWidth) => ({ x: worldWidth / 2, y: 100, width: worldWidth, height: 200 }),
     generate: (worldWidth) => {
         const bodies = [];
-        const mapHeight = 5000;
-        
-        const wallOptions = { isStatic: true, friction: 0.1, restitution: 0.5, render: { fillStyle: '#1e293b' } };
-        const thick = 500;
-        bodies.push(Bodies.rectangle(-thick/2, mapHeight/2, thick, mapHeight, wallOptions));
-        bodies.push(Bodies.rectangle(worldWidth + thick/2, mapHeight/2, thick, mapHeight, wallOptions));
+
         
         // 스스로 움직이는(돌아가는) 중앙축 기반 고정 시소 (물리 엔진 충돌 안정화 버전)
         const addMotorSeesaw = (x, y, width) => {
@@ -85,26 +81,7 @@ export default {
         }
 
         let obsY = startY + rows * spacingY + 80;
-        const finishY = obsY + 250;
-        
-        const funnelGap = 80; 
-        const coverX = (worldWidth / 2) - (funnelGap / 2);
-        const funnelAngle = Math.PI / 6; 
-        const funnelLength = (coverX / Math.cos(funnelAngle)) + 50; 
-        const funnelCenterX = coverX / 2;
-
-        bodies.push(Bodies.rectangle(funnelCenterX, finishY - 80, funnelLength, 24, {
-            isStatic: true, angle: funnelAngle, render: { fillStyle: '#64748b' }
-        }));
-        bodies.push(Bodies.rectangle(worldWidth - funnelCenterX, finishY - 80, funnelLength, 24, {
-            isStatic: true, angle: -funnelAngle, render: { fillStyle: '#64748b' }
-        }));
-
-        const finishLine = Bodies.rectangle(worldWidth/2, finishY, 150, 40, {
-            isStatic: true, isSensor: true, label: 'FinishLine', render: { fillStyle: 'rgba(16, 185, 129, 0.4)', strokeStyle: '#10b981', lineWidth: 2 }
-        });
-        bodies.push(finishLine);
-        bodies.push(Bodies.rectangle(worldWidth/2, finishY + 200, worldWidth, 100, wallOptions));
+        addZigzagBoundaryAndFinish(bodies, worldWidth, startY, obsY);
 
         return bodies;
     }

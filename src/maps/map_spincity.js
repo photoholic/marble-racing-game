@@ -2,6 +2,8 @@ import Matter from 'matter-js';
 
 const { Bodies, Body, Composite } = Matter;
 
+import { addZigzagBoundaryAndFinish } from '../game/MapBoundary.js';
+
 export default {
     name: "Spin City",
     description: "Huge rotating windmills that smack marbles out of their path.",
@@ -15,24 +17,7 @@ export default {
     generate(worldWidth, mapHeight) {
         const bodies = [];
         
-        const wallOptions = { 
-            isStatic: true, 
-            friction: 0.005,
-            render: { fillStyle: '#475569' } 
-        };
-        const thick = 100;
-        bodies.push(Bodies.rectangle(-thick/2, mapHeight/2, thick, mapHeight, wallOptions));
-        bodies.push(Bodies.rectangle(worldWidth + thick/2, mapHeight/2, thick, mapHeight, wallOptions));
-
         const startY = window.innerHeight * 0.9;
-        
-        // 상단 깔때기 (구슬들을 중앙으로 좀 모아줌)
-        bodies.push(Bodies.rectangle(worldWidth * 0.2, startY + 150, worldWidth * 0.6, 20, {
-            isStatic: true, angle: Math.PI / 8, render: { fillStyle: '#334155' }
-        }));
-        bodies.push(Bodies.rectangle(worldWidth * 0.8, startY + 150, worldWidth * 0.6, 20, {
-            isStatic: true, angle: -Math.PI / 8, render: { fillStyle: '#334155' }
-        }));
         
         // 거대 모터 회전체 4개 생성
         const createCrossMotor = (x, y, size, speed, color) => {
@@ -61,6 +46,9 @@ export default {
             bodies.push(Bodies.circle(pinX, y - 80, 15, { isStatic: true, render: { fillStyle: '#94a3b8' } }));
             bodies.push(Bodies.circle(pinX, y + 80, 15, { isStatic: true, render: { fillStyle: '#94a3b8' } }));
         }
+        
+        const obsEndY = startY + 400 + (3 * spacingY);
+        addZigzagBoundaryAndFinish(bodies, worldWidth, startY, obsEndY);
 
         return bodies;
     }
