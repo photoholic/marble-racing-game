@@ -6,12 +6,22 @@ import mapTypeC from './maps/typeC_pachinko.js';
 import mapPins from './maps/map_pins_only.js';
 import mapSeesaws from './maps/map_seesaws.js';
 import mapBumpers from './maps/map_bumpers.js';
+import mapSpincity from './maps/map_spincity.js';
+import mapGlassbreaker from './maps/map_glassbreaker.js';
+import mapOrbital from './maps/map_orbital.js';
+import mapConveyor from './maps/map_conveyor.js';
+import mapPlinko from './maps/map_plinko.js';
 
 const mapsConfig = {
     'mixed': mapTypeC,
     'pins': mapPins,
     'seesaws': mapSeesaws,
-    'bumpers': mapBumpers
+    'bumpers': mapBumpers,
+    'spincity': mapSpincity,
+    'glassbreaker': mapGlassbreaker,
+    'orbital': mapOrbital,
+    'conveyor': mapConveyor,
+    'plinko': mapPlinko
 };
 
 let engineSetup, mapLoader, marbleManager;

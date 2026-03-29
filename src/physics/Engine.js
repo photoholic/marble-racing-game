@@ -149,7 +149,26 @@ export class EngineSetup {
                 Matter.Body.setAngularVelocity(c, 0.025);
             });
             
-            // --- 6. 흐르는 컨베이어 널빤지 장애물 ---
+            // --- 6. 블랙홀 중력 로직 (Orbital Nexus) ---
+            const blackHoles = bodies.filter(b => b.label === 'BlackHole');
+            blackHoles.forEach(bh => {
+                activeMarbles.forEach(marble => {
+                    const dx = bh.position.x - marble.position.x;
+                    const dy = bh.position.y - marble.position.y;
+                    const distSq = dx * dx + dy * dy;
+                    if (distSq < (bh.gravityRadius * bh.gravityRadius)) {
+                        // 중력 가속도 계산 (거리에 반비례, 중심부 블랙홀에 가까울수록 아주 강한 힘)
+                        const dist = Math.sqrt(distSq);
+                        const forceMag = bh.gravityStrength / Math.max(10, dist); // 최소 거리 10 제한으로 폭주 방지
+                        Matter.Body.applyForce(marble, marble.position, {
+                            x: (dx / dist) * forceMag,
+                            y: (dy / dist) * forceMag
+                        });
+                    }
+                });
+            });
+            
+            // --- 7. 흐르는 컨베이어 널빤지 장애물 ---
             const conveyors = bodies.filter(b => b.label === 'ConveyorPlank');
             conveyors.forEach(c => {
                 const wrapWidth = c.totalUnit * c.numPlanks;
@@ -166,7 +185,7 @@ export class EngineSetup {
                 Matter.Body.setPosition(c, { x: targetX, y: c.position.y });
             });
             
-            // --- 7. 실시간 등수 업데이트 로직 ---
+            // --- 8. 실시간 등수 업데이트 로직 ---
             const liveRankings = document.getElementById('live-rankings');
             if (activeMarbles.length > 0) {
                 // 구슬이 출발(isStatic 해제)하면 랭킹창 표시
@@ -193,6 +212,39 @@ export class EngineSetup {
                  liveRankings.classList.add('hidden');
             }
         });
+        
+        // --- 9. 유리(Breakable) 파괴 충돌 이벤트 ---
+        Events.on(this.engine, 'collisionStart', (event) => {
+            const pairs = event.pairs;
+            pairs.forEach((pair) => {
+                const bodyA = pair.bodyA;
+                const bodyB = pair.bodyB;
+                
+                // 만약 한쪽이 Marble이고 한쪽이 파괴 가능한 유리면 파괴!
+                if (bodyA.label === 'Marble' && bodyB.isBreakable) {
+                    this.shatterGlass(bodyB);
+                } else if (bodyB.label === 'Marble' && bodyA.isBreakable) {
+                    this.shatterGlass(bodyA);
+                }
+            });
+        });
+    }
+
+    // 유리 파괴 함수 (지연 삭제 및 시각 효과)
+    shatterGlass(body) {
+        if (body.isShattering) return;
+        body.isShattering = true;
+        
+        // 시각적으로 투명해지는 연출
+        if (body.render) {
+            body.render.opacity = 0.2;
+            body.render.strokeStyle = '#ef4444'; // 빨간 균열 시뮬레이션
+        }
+        
+        // 50ms 후 완전히 삭제
+        setTimeout(() => {
+            Matter.Composite.remove(this.world, body);
+        }, 50);
     }
 
     setupCustomRendering() {

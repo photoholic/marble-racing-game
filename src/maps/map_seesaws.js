@@ -52,22 +52,35 @@ export default {
                 bodies.push(Bodies.rectangle(x2, currentY + 60, len2, 16, {
                     isStatic: true, angle: tilt2, render: { fillStyle: '#f59e0b' }
                 }));
-            } else if (randType < 0.70) {
+            } else if (randType < 0.65) {
                 // 중앙 모터 구동 시소의 경우 길이가 양쪽 벽에 닿지 않도록 최대 길이(maxLen) 제한
                 const maxLen = worldWidth - 90; // 양쪽 벽에서 무조건 45px 띄움
                 const seesawLen = maxLen * (0.6 + Math.random() * 0.4);
                 addMotorSeesaw(worldWidth / 2, currentY, seesawLen);
             } else {
-                // 벽면에 붙은 초거대 고정 경사판 1개
-                // 대각선 기울기를 감안해도 최소 한쪽 벽과는 무조건 45px 간격이 지켜지도록 좌표 연산
-                const maxLen = worldWidth - 90;
-                const hugeLen = maxLen * (0.7 + Math.random() * 0.3);
+                // 벽면에 완전히 밀착된 거대 고정 빗면 1~2개 생성 (무조건 중앙을 향하도록 각도 강제 설정!)
+                // 벽쪽 공간으로 직진 낙하하는 구슬들을 구제하여 맵 가운데로 강제 합류시킴
+                const maxLen = worldWidth * 0.4;
+                const slantLen = maxLen * (0.7 + Math.random() * 0.3);
                 
-                const xPos = Math.random() > 0.5 ? (45 + hugeLen/2) : (worldWidth - 45 - hugeLen/2);
-                
-                bodies.push(Bodies.rectangle(xPos, currentY, hugeLen, 24, {
-                    isStatic: true, angle: tilt1, render: { fillStyle: '#6366f1' }
-                }));
+                // 50% 확률로 좌측 벽, 혹은 우측 벽, 혹은 양쪽 모두 (30% 확률)
+                const buildLeft = Math.random() > 0.3;
+                const buildRight = Math.random() > 0.3 || !buildLeft;
+
+                if (buildLeft) {
+                    const leftX = slantLen / 2 - 20; // 20px 겹치게 하여 틈새 봉쇄
+                    bodies.push(Bodies.rectangle(leftX, currentY, slantLen, 24, {
+                        // 왼쪽 벽에 붙었으면 우측이 낮아야 함 (양수 각도)
+                        isStatic: true, angle: Math.abs(angleVal) + 0.1, render: { fillStyle: '#10b981' }
+                    }));
+                }
+                if (buildRight) {
+                    const rightX = worldWidth - (slantLen / 2) + 20;
+                    bodies.push(Bodies.rectangle(rightX, currentY + (buildLeft ? 80 : 0), slantLen, 24, {
+                        // 오른쪽 벽에 붙었으면 좌측이 낮아야 함 (음수 각도)
+                        isStatic: true, angle: -Math.abs(angleVal) - 0.1, render: { fillStyle: '#10b981' }
+                    }));
+                }
             }
         }
 

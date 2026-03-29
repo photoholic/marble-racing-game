@@ -13,9 +13,9 @@ export default {
         bodies.push(Bodies.rectangle(-thick/2, mapHeight/2, thick, mapHeight, wallOptions));
         bodies.push(Bodies.rectangle(worldWidth + thick/2, mapHeight/2, thick, mapHeight, wallOptions));
         
-        const rows = 20; 
-        const spacingX = Math.max(100, worldWidth / 6); 
-        const spacingY = 160;  
+        const rows = 26; 
+        const spacingX = Math.max(70, worldWidth / 6); 
+        const spacingY = 100;  
         const totalCols = Math.floor(worldWidth / spacingX);
         const startY = window.innerHeight * 0.9;  
 
