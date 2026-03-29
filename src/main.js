@@ -95,6 +95,15 @@ document.addEventListener('DOMContentLoaded', () => {
             liveRankings.classList.remove('hidden');
             document.getElementById('live-ranking-list').innerHTML = ''; // 초기화
         }
+
+        // 스마트폰 고스트 클릭 방어 (의도치 않은 출발 방지용 0.5초 무적)
+        const raceBtn = document.getElementById('start-race-btn');
+        raceBtn.disabled = true;
+        raceBtn.style.opacity = '0.5';
+        setTimeout(() => {
+            raceBtn.disabled = false;
+            raceBtn.style.opacity = '1';
+        }, 500);
     });
 
     backToStartBtn.addEventListener('click', () => {
