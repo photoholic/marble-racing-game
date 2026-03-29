@@ -6,15 +6,18 @@
     <title>구슬 레이싱</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
     
-  <script type="module" crossorigin src="/marble-racing-game/assets/index-971efbc1.js"></script>
+  <script type="module" crossorigin src="/marble-racing-game/assets/index-231ca868.js"></script>
   <link rel="stylesheet" href="/marble-racing-game/assets/index-1eaeae76.css">
 </head>
 <body>
     <div id="app">
         <canvas id="game-canvas"></canvas>
         <div id="ui-layer">
+            <!-- 디버깅용 초기화 상태 표시기 -->
+            <div id="boot-status" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #64748b; z-index: 10000; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 4px;">SYSTEM INITIALIZING...</div>
+
             <div id="start-screen" class="panel">
-                <h1>마블 레이스 <span class="badge">PRO</span></h1>
+                <h1>마블 레이스 <span class="badge">v1.0.5</span></h1>
                 <p>구슬 수를 정하고 배치한 뒤 출발하세요!</p>
                 <div class="input-group">
                     <label>맵 테마 선택</label>
@@ -60,7 +63,7 @@
             <div id="toast" class="toast hidden"></div>
         </div>
     </div>
-    <div id="version-tag" style="position: fixed; bottom: 10px; right: 15px; font-size: 11px; color: var(--text-muted); opacity: 0.6; pointer-events: none; z-index: 1000; font-family: 'Outfit', sans-serif;">v1.0.4 | made by daniel</div>
+    <div id="version-tag" style="position: fixed; bottom: 10px; right: 15px; font-size: 11px; color: #94a3b8; opacity: 0.6; pointer-events: none; z-index: 1000; font-family: 'Outfit', sans-serif;">v1.0.5 | daniel</div>
     
 </body>
 </html>
