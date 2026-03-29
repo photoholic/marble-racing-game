@@ -19,6 +19,22 @@ export class MarbleManager {
         this.world = engineSetup.world;
         this.marbles = [];
         this.glassFloor = null;
+        
+        // 안티-스톨 (구슬 멈춤 방지) 로직 주기적 실행
+        Matter.Events.on(this.engineSetup.engine, 'beforeUpdate', () => {
+            if (!this.glassFloor && this.marbles.length > 0) {
+                for (let marble of this.marbles) {
+                    if (!marble.isFinished) {
+                        const speedSq = marble.velocity.x * marble.velocity.x + marble.velocity.y * marble.velocity.y;
+                        if (speedSq < 0.05) { // 완전히 멈췄거나 균형점에 갇힘
+                            // 초미세 랜덤 진동을 가해 평형 균형(Equilibrium)을 깨트림
+                            const nudge = (Math.random() - 0.5) * 0.0003;
+                            Matter.Body.applyForce(marble, marble.position, { x: nudge, y: 0.0001 });
+                        }
+                    }
+                }
+            }
+        });
     }
 
     spawnMarbles(count, spawnArea) {

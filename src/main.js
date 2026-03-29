@@ -71,8 +71,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let isStandbyReady = false;
 
+    // 브라우저 History(뒤로가기) 모션 대응을 위한 초기 상태 등록
+    window.history.replaceState({ page: 'start' }, "");
+    
+    // 안드로이드 물리 뒤로가기 버튼 감지 로직
+    window.addEventListener('popstate', (e) => {
+        if (!e.state || e.state.page === 'start') {
+            // 사용자가 브라우저 뒤로가기를 눌러 'start' 상태로 돌아온 경우, UI 완전 초기화 진행
+            isStandbyReady = false;
+            standbyUi.classList.add('hidden');
+            document.getElementById('back-to-start-btn').classList.add('hidden');
+            countdownDisplay.classList.add('hidden');
+            countdownDisplay.classList.remove('active');
+            leaderboard.classList.add('hidden');
+            
+            const liveRankings = document.getElementById('live-rankings');
+            if (liveRankings) liveRankings.classList.add('hidden');
+            
+            startScreen.classList.remove('hidden');
+            engineSetup.stop();
+            engineSetup.clearWorld();
+        }
+    });
+
     placeBtn.addEventListener('click', (e) => {
         e.preventDefault();
+        
+        // 레이스 화면 진입 시 가상 이동(History) 추가
+        window.history.pushState({ page: 'game' }, "");
         
         const count = Math.min(100, Math.max(2, parseInt(playerCountInput.value) || 10));
         const selectedMapData = mapsConfig[mapSelectInput.value] || mapTypeC;
@@ -102,6 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     backToStartBtn.addEventListener('click', () => {
+        // 스크린상의 뒤로가기 버튼을 눌렀을 때도 History 상태를 일치시킴
+        window.history.replaceState({ page: 'start' }, "");
+        
         isStandbyReady = false;
         standbyUi.classList.add('hidden');
         document.getElementById('back-to-start-btn').classList.add('hidden');
@@ -154,6 +183,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     restartBtn.addEventListener('click', () => {
+        // 다시 시작하기를 눌러도 초기 화면으로 가므로 History 상태 일치
+        window.history.replaceState({ page: 'start' }, "");
+        
         leaderboard.classList.add('hidden');
         standbyUi.classList.add('hidden');
         countdownDisplay.classList.add('hidden');
