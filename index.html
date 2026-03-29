@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>구슬 추첨 레이싱</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    
+  <script type="module" crossorigin src="/marble-racing-game/assets/index-ea0f47ac.js"></script>
+  <link rel="stylesheet" href="/marble-racing-game/assets/index-ed7b82bc.css">
+</head>
+<body>
+    <div id="app">
+        <canvas id="game-canvas"></canvas>
+        <div id="ui-layer">
+            <div id="start-screen" class="panel">
+                <h1>마블 레이스 <span class="badge">PRO</span></h1>
+                <p>구슬 수를 정하고 배치한 뒤 출발하세요!</p>
+                <div class="input-group">
+                    <label>맵 테마 선택</label>
+                    <select id="map-select">
+                        <option value="mixed">Mixed Chaos (다양한 트랩)</option>
+                        <option value="pins">Pinball Classic (순수 핀볼)</option>
+                        <option value="seesaws">Seesaw Valley (경사로와 시소)</option>
+                        <option value="bumpers">Bumper Frenzy (초탄성 범퍼지옥)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>참가자 수 (구슬 개수)</label>
+                    <input type="number" id="player-count" value="5" min="2" max="100" />
+                </div>
+                <button id="place-btn" class="glow-btn">구슬 배치</button>
+            </div>
+            
+            <button id="back-to-start-btn" class="glow-btn outline hidden" style="position: absolute; top: 20px; left: 20px; width: auto; font-size: 1rem; padding: 10px 15px; z-index: 100;">⬅️ 첫 화면으로</button>
+
+            <div id="standby-ui" class="hidden" style="position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); z-index: 20; width: max-content; text-align: center;">
+                <button id="start-race-btn" class="start-action glow-btn text-2xl font-bold px-10 py-5" style="white-space: nowrap; min-width: 320px;">🚀 레이스 출발!</button>
+            </div>
+
+        <!-- 3, 2, 1 카운트다운 표시기 -->
+        <div id="countdown-display" class="hidden">3</div>
+        
+        <!-- 실시간 등수 표시 -->
+        <div id="live-rankings" class="hidden">
+            <h3>실시간 순위</h3>
+            <ul id="live-ranking-list"></ul>
+        </div>
+            
+            <div id="leaderboard" class="panel hidden">
+                <h2>최종 순위</h2>
+                <ul id="rank-list"></ul>
+                <button id="restart-btn" class="glow-btn">다시 시작하기</button>
+            </div>
+            
+            <div id="toast" class="toast hidden"></div>
+        </div>
+    </div>
+    
+</body>
+</html>
