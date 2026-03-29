@@ -104,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     placeBtn.addEventListener('click', (e) => {
         try {
+            console.log("Spawn button clicked - count", playerCountInput.value);
             e.preventDefault();
             
             // 1. UI 전환 우선 실행 (화면 멈춤 방지)
@@ -119,12 +120,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // 3. 물리 엔진 및 맵 생성
             const count = Math.min(100, Math.max(2, parseInt(playerCountInput.value) || 10));
             const selectedMapData = mapsConfig[mapSelectInput.value] || mapTypeC;
+            console.log("Selected map:", selectedMapData.name);
 
             engineSetup.clearWorld();
+            console.log("World cleared");
+
             mapLoader.loadMap(selectedMapData);
-            marbleManager.spawnMarbles(count); // spawnArea는 더 이상 사용하지 않으므로 인자 제거
+            console.log("Map loaded");
+
+            marbleManager.spawnMarbles(count);
+            console.log("Marbles spawned");
             
             engineSetup.start();
+            console.log("Engine started");
             
             const liveRankings = document.getElementById('live-rankings');
             if (liveRankings) {
@@ -136,9 +144,13 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { isStandbyReady = true; }, 300);
         } catch (err) {
             console.error("Critical error during spawn:", err);
-            // 에러 시 다시 시작 화면으로 복구 시도
-            startScreen.classList.remove('hidden');
-            standbyUi.classList.add('hidden');
+            // 에러 발생 시 알림 표시
+            toast.textContent = "오류 발생: " + err.message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                startScreen.classList.remove('hidden');
+                standbyUi.classList.add('hidden');
+            }, 1000);
         }
     });
 
