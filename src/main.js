@@ -103,36 +103,43 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     placeBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        // 레이스 화면 진입 시 가상 이동(History) 추가
-        window.history.pushState({ page: 'game' }, "");
-        
-        const count = Math.min(100, Math.max(2, parseInt(playerCountInput.value) || 10));
-        const selectedMapData = mapsConfig[mapSelectInput.value] || mapTypeC;
-        
-        startScreen.classList.add('hidden');
-        rankList.innerHTML = '';
-        currentRank = 1;
+        try {
+            e.preventDefault();
+            
+            // 1. UI 전환 우선 실행 (화면 멈춤 방지)
+            startScreen.classList.add('hidden');
+            standbyUi.classList.remove('hidden');
+            document.getElementById('back-to-start-btn').classList.remove('hidden');
+            rankList.innerHTML = '';
+            currentRank = 1;
 
-        engineSetup.clearWorld();
-        mapLoader.loadMap(selectedMapData);
-        
-        marbleManager.spawnMarbles(count, selectedMapData.getSpawnPoint(window.innerWidth));
-        
-        engineSetup.start();
+            // 2. 가상 이동 내역 기록
+            window.history.pushState({ page: 'game' }, "");
 
-        standbyUi.classList.remove('hidden');
-        document.getElementById('back-to-start-btn').classList.remove('hidden');
-        
-        const liveRankings = document.getElementById('live-rankings');
-        if (liveRankings) {
-            liveRankings.classList.add('hidden');
-            document.getElementById('live-ranking-list').innerHTML = '';
+            // 3. 물리 엔진 및 맵 생성
+            const count = Math.min(100, Math.max(2, parseInt(playerCountInput.value) || 10));
+            const selectedMapData = mapsConfig[mapSelectInput.value] || mapTypeC;
+
+            engineSetup.clearWorld();
+            mapLoader.loadMap(selectedMapData);
+            marbleManager.spawnMarbles(count); // spawnArea는 더 이상 사용하지 않으므로 인자 제거
+            
+            engineSetup.start();
+            
+            const liveRankings = document.getElementById('live-rankings');
+            if (liveRankings) {
+                liveRankings.classList.add('hidden');
+                document.getElementById('live-ranking-list').innerHTML = '';
+            }
+
+            isStandbyReady = false;
+            setTimeout(() => { isStandbyReady = true; }, 300);
+        } catch (err) {
+            console.error("Critical error during spawn:", err);
+            // 에러 시 다시 시작 화면으로 복구 시도
+            startScreen.classList.remove('hidden');
+            standbyUi.classList.add('hidden');
         }
-
-        isStandbyReady = false;
-        setTimeout(() => { isStandbyReady = true; }, 300);
     });
 
     backToStartBtn.addEventListener('click', () => {
