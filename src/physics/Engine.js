@@ -263,8 +263,12 @@ export class EngineSetup {
                 const bounds = this.render.bounds;
                 const canvasW = this.render.options.width;
                 const canvasH = this.render.options.height;
-                const scaleX = canvasW / (bounds.max.x - bounds.min.x);
-                const scaleY = canvasH / (bounds.max.y - bounds.min.y);
+                
+                // 0으로 나누기 방지 (Infinity 방지)
+                const boundWidth = Math.max(1, bounds.max.x - bounds.min.x);
+                const boundHeight = Math.max(1, bounds.max.y - bounds.min.y);
+                const scaleX = canvasW / boundWidth;
+                const scaleY = canvasH / boundHeight;
                 
                 const screenX = (position.x - bounds.min.x) * scaleX;
                 const screenY = (position.y - bounds.min.y) * scaleY;
