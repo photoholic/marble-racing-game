@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Marble Racing</string>
+    <string name="title_activity_main">Marble Racing</string>
+    <string name="package_name">com.photoholic.marbleracing</string>
+    <string name="custom_url_scheme">com.photoholic.marbleracing</string>
+</resources>
